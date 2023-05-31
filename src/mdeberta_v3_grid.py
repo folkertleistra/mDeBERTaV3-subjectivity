@@ -327,7 +327,6 @@ def wanb_train():
         wandb.log({'best_val_f1': best_val_f1})
 
         print("Training complete!")
-
         print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
 
 
