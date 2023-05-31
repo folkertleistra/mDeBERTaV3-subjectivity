@@ -27,10 +27,8 @@ from transformers import (AdamW, AutoModelForSequenceClassification,
 
 ### This script only works on CUDA devices. ###
 if torch.cuda.is_available():
-    # Tell PyTorch to use the GPU.    
     device = torch.device("cuda")
-    print('There are %d GPU(s) available.' % torch.cuda.device_count())
-    print('We will use the GPU:', torch.cuda.get_device_name(0))
+    print(f'CUDA device found: {torch.cuda.get_device_name(0)}')
 
 else:
     print('No GPU available, exiting...')
@@ -38,6 +36,7 @@ else:
 
 ### Setting up the seed, 42 was used to obtain our fine-tuned models ###
 seed = 42
+
 np.random.seed(seed)
 tf.random.set_seed(seed)
 python_random.seed(seed)
@@ -52,6 +51,7 @@ max_length = 40                                 # Maximum tokenization length - 
 grid_iterations = 25                            # The amount of iterations for which to perform a grid search
 wand_project_name = '<YOUR_PROJECT_NAME>'       # The name of the project on which the data will be stored on WandB
 
+# Grid values that can be randomly selected from
 weight_decay_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
 warmup_step_values = [100, 200, 300, 400, 500]
 learning_rate_values = [2e-5, 3e-5, 4e-5, 5e-5, 6e-5]
@@ -118,8 +118,12 @@ dev_labels = torch.tensor(Y_dev_bin)
 dev_input_ids, dev_attention_masks = tok_data(df_dev['sentence'].to_list())
 
 def create_dataloader(input_ids, attention_masks, labels, bs):
-  dataset = TensorDataset(input_ids, attention_masks, labels)
-  return DataLoader(dataset, sampler=RandomSampler(dataset), batch_size=bs)
+    """
+    Creates a TensorDataset for the input_ids, attention_masks and labels.
+    The TensorDataset is placed into a DataLoader using a RANDOM sampler. This means the data gets shuffled.
+    """
+    dataset = TensorDataset(input_ids, attention_masks, labels)
+    return DataLoader(dataset, sampler=RandomSampler(dataset), batch_size=bs)
 
 def create_optimizer_and_scheduler(lr, ws, len_td, model_params, epochs, wd):
     """
@@ -146,24 +150,31 @@ def format_time(elapsed):
 
 
 def get_best_val_stats(stats):
-    highest = 0
-    epoch = 0
+    """
+    Function that will look throught the collected stats and determine which accuracy was the highest and
+    which f1 and accuracy were the best. The BEST meaning: obtained in the epoch with the lowest validation loss.
+    :param stats: training stats that were collected during training
+    :return: highest acc score, epoch in which the highest acc was obtained, best acc score, lowest validation loss,
+    epoch in which the lowest validation loss was obtained, best f1 score
+    """
+    highest_acc = 0
+    highest_acc_epoch = 0
     min_val_loss = stats[0]['Valid. Loss']
-    min_val_epoch = 0
+    min_val_loss_epoch = 0
     best_val_acc = 0
     best_val_f1 = 0
     for stat in stats:
-        if stat['Valid. Accur.'] >= highest:
-            highest = stat['Valid. Accur.']
-            epoch = stat['epoch']
+        if stat['Valid. Accur.'] >= highest_acc:
+            highest_acc = stat['Valid. Accur.']
+            highest_acc_epoch = stat['epoch']
 
         if stat['Valid. Loss'] <= min_val_loss:
             best_val_acc = stat['Valid. Accur.']
             best_val_f1 = stat['Valid. Macro F1']
             min_val_loss = stat['Valid. Loss']
-            min_val_epoch = stat['epoch']
+            min_val_loss_epoch = stat['epoch']
 
-    return highest, epoch, best_val_acc, min_val_loss, min_val_epoch, best_val_f1
+    return highest_acc, highest_acc_epoch, best_val_acc, min_val_loss, min_val_loss_epoch, best_val_f1
 
 
 def print_cr(labels, predictions):
@@ -195,7 +206,8 @@ def wanb_train():
     total_t0 = time.time()
     with wandb.init(config=sweep_config):
         config = wandb.config
-        print(config)
+        print(f'Config that we will be using: {config}')
+
         model = AutoModelForSequenceClassification.from_pretrained(
             model_to_use,
             num_labels = 2,
@@ -261,17 +273,14 @@ def wanb_train():
             model.eval()
 
             # Tracking variables
-            total_eval_accuracy = 0
             total_eval_loss = 0
 
             for batch in dev_dataloader:
-
                 b_input_ids = batch[0].to(device)
                 b_input_mask = batch[1].to(device)
                 b_labels = batch[2].to(device)
 
                 with torch.no_grad():
-
                     result = model(b_input_ids,
                                   token_type_ids=None,
                                   attention_mask=b_input_mask,
@@ -289,28 +298,22 @@ def wanb_train():
                 true_labels[epoch_i].append(label_ids)
                 predictions[epoch_i].append(logits)
 
-
-
             # Printing the cr
             val_cr = print_cr(true_labels[epoch_i], predictions[epoch_i])
             cr_val_f1 = val_cr['macro avg']['f1-score']
             cr_val_acc = val_cr['accuracy']
-
             print("CR Accuracy: {0:.3f}".format(cr_val_acc))
 
             # Calculate the average loss over all of the batches.
             avg_val_loss = total_eval_loss / len(dev_dataloader)
-
             val_losses[epoch_i] = avg_val_loss
-
             validation_time = format_time(time.time() - t0)
-
             print("  Validation Loss: {0:.3f}".format(avg_val_loss))
             print("  Validation took: {:}".format(validation_time))
 
             # Record all statistics from this epoch.
             training_stats.append(
-                {
+                    {
                     'epoch': epoch_i,
                     'Training Loss': avg_train_loss,
                     'Valid. Loss': avg_val_loss,
@@ -318,14 +321,15 @@ def wanb_train():
                     'Valid. Macro F1': cr_val_f1,
                     'Training Time': training_time,
                     'Validation Time': validation_time
-                }
-            )
+                    }
+                )
         best_val_loss_epoch = min(val_losses, key=val_losses.get)
         lowest_val = val_losses[best_val_loss_epoch]
 
         print_cr(true_labels[best_val_loss_epoch], predictions[best_val_loss_epoch])
 
-        highest_val_acc, highest_val_acc_epoch, best_val_acc, min_val_loss, min_val_epoch, best_val_f1 = get_best_val_stats(training_stats)
+        highest_val_acc, highest_val_acc_epoch, best_val_acc, min_val_loss, min_val_epoch, best_val_f1 = \
+            get_best_val_stats(training_stats)
 
         # Log the metric that need to be tracked to WandB
         wandb.log({"min_val_loss": lowest_val, 'epoch_loss': best_val_loss_epoch + 1})
