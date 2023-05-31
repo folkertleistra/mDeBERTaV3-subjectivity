@@ -5,9 +5,7 @@
 
 # Importing all libraries
 import datetime
-import os
 import random as python_random
-import shutil
 import sys
 import time
 from collections import defaultdict
@@ -19,13 +17,10 @@ import torch
 import wandb
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelBinarizer
-from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
-                              TensorDataset)
-from transformers import (AdamW, AutoModelForSequenceClassification,
-                          AutoTokenizer, BertForSequenceClassification,
-                          get_linear_schedule_with_warmup)
+from torch.utils.data import DataLoader, RandomSampler, TensorDataset
+from transformers import AdamW, AutoModelForSequenceClassification, AutoTokenizer, get_linear_schedule_with_warmup
 
-### This script only works on CUDA devices. ###
+### This script only works on CUDA devices ###
 if torch.cuda.is_available():
     device = torch.device("cuda")
     print(f'CUDA device found: {torch.cuda.get_device_name(0)}')
@@ -50,6 +45,7 @@ max_length = 40                                 # Maximum tokenization length - 
 # WandB specific
 grid_iterations = 25                            # The amount of iterations for which to perform a grid search
 wand_project_name = '<YOUR_PROJECT_NAME>'       # The name of the project on which the data will be stored on WandB
+sweep_config = {'method': 'random'}
 
 # Grid values that can be randomly selected from
 weight_decay_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
@@ -131,14 +127,9 @@ def create_optimizer_and_scheduler(lr, ws, len_td, model_params, epochs, wd):
     We only experimented with the AdamW optimizer.
     The learning rate (lr), Weight Decay (wd), epochs and Warmup Steps (ws) can be adjusted
     """
-    optimizer = AdamW(model_params,
-                    lr=lr,
-                    weight_decay=wd)
-
+    optimizer = AdamW(model_params, lr=lr, weight_decay=wd)
     total_steps = len_td * epochs
-    scheduler = get_linear_schedule_with_warmup(optimizer,
-                                              num_warmup_steps = ws,
-                                              num_training_steps = total_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=ws, num_training_steps=total_steps)
 
     return optimizer, scheduler
 
@@ -196,7 +187,6 @@ def print_cr(labels, predictions):
 def wanb_train():
     """
     Main function that performs a grid search using WandB and trains the model
-    :return:
     """
     predictions, true_labels = defaultdict(list), defaultdict(list)
     val_losses = {}
@@ -224,7 +214,6 @@ def wanb_train():
                                                               model.parameters(), config.epochs, config.wd)
 
         for epoch_i in range(config.epochs):
-
             print('======== Epoch {:} / {:} ========'.format(epoch_i, config.epochs - 1))
             print('Training...')
 
@@ -341,7 +330,6 @@ def wanb_train():
 
         print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
 
-sweep_config = {'method': 'random'}
 
 parameters_dict = {
     'epochs': {
