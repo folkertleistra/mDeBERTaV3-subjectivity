@@ -12,7 +12,7 @@ import pandas as pd
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 
 ### This script only works on CUDA devices ###
@@ -23,7 +23,6 @@ if torch.cuda.is_available():
 else:
     print('No GPU available, exiting...')
     sys.exit(1)
-
 
 ### Setting up the seed, 42 was used to obtain our fine-tuned models ###
 seed = 42
@@ -123,12 +122,12 @@ for batch in test_dataloader:
 flat_predictions = np.concatenate(predictions, axis=0)
 flat_predictions = np.argmax(flat_predictions, axis=1).flatten()
 
-### Create a classification report if we have gold labels ###
+### Create a classification report and confusion matrix if we have gold labels ###
 if gold:
     encoder = LabelBinarizer()
     Y_dev_bin = encoder.fit_transform(df_test['label'].to_list())
-
     Y_dev_bin = [i[0] for i in Y_dev_bin]
     print(classification_report(Y_dev_bin, flat_predictions))
-
-label_preds = ['OBJ' if i == 0 else 'SUBJ' for i in flat_predictions]
+    label_preds = ['OBJ' if i == 0 else 'SUBJ' for i in flat_predictions]
+    label_golds = ['OBJ' if i == 0 else 'SUBJ' for i in Y_dev_bin]
+    print(confusion_matrix(label_golds, label_preds))
