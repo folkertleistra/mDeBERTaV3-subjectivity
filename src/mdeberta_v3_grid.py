@@ -332,21 +332,11 @@ def wanb_train():
 
 
 parameters_dict = {
-    'epochs': {
-        'values' : epoch_values
-    },
-    'batch_size': {
-      'values': batch_size_values
-    },
-    'lr': {
-        'values': learning_rate_values
-    },
-    'warmup_steps': {
-        'values': warmup_step_values
-    },
-    'wd': {
-        'values': weight_decay_values
-    }
+    'epochs': {'values': epoch_values},
+    'batch_size': {'values': batch_size_values},
+    'lr': {'values': learning_rate_values},
+    'warmup_steps': {'values': warmup_step_values},
+    'wd': {'values': weight_decay_values}
     }
 
 sweep_config['parameters'] = parameters_dict
