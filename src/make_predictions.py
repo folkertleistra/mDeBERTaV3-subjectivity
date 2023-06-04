@@ -128,6 +128,4 @@ if gold:
     Y_dev_bin = encoder.fit_transform(df_test['label'].to_list())
     Y_dev_bin = [i[0] for i in Y_dev_bin]
     print(classification_report(Y_dev_bin, flat_predictions))
-    label_preds = ['OBJ' if i == 0 else 'SUBJ' for i in flat_predictions]
-    label_golds = ['OBJ' if i == 0 else 'SUBJ' for i in Y_dev_bin]
-    print(confusion_matrix(label_golds, label_preds))
+    print(confusion_matrix(flat_predictions, Y_dev_bin))
