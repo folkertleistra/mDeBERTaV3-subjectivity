@@ -38,6 +38,7 @@ To run the project, follow these steps:
 
 ```shell
 python3 -m venv myenv
+
 source venv/bin/activate
 ```
 
