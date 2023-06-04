@@ -3,6 +3,8 @@ This GitHub contains all the code and fine-tuned mDeBERTaV3 models that we used 
 
 More details about this lab can be found [here](https://checkthat.gitlab.io/).
 
+All our fine-tuned models can be downloaded [here](https://drive.google.com/drive/u/0/folders/1TbKs07_ISbw4Gr9njy7IBAAjCyx9jyQP)
+
 ## Files and Directories
 
 The following files and directories can be found in this repository:
@@ -11,7 +13,6 @@ The following files and directories can be found in this repository:
 │ ├── make_predictions.py
 │ └── mdebertav3_grid.py
 ├── fine-tuned-models
-│ └── models.zip
 ├── data
 │ └── multilingual_adapted.tsv
 └── requirements.txt
@@ -21,7 +22,7 @@ The following files and directories can be found in this repository:
   - `make_predictions.py`: Python script that can be used to make predictions using a fine-tuned model on a test set.
   - `mdebertav3_grid.py`: Python script used to run random grid searches using Weights and Biases.
 
-- `fine-tuned-models`: Directory containing a zip file (`models.zip`) that includes all the fine-tuned models.
+- `fine-tuned-models`: Directory that can be used to store the fine-tuned models. Models can be found [here](https://drive.google.com/drive/u/0/folders/1TbKs07_ISbw4Gr9njy7IBAAjCyx9jyQP)
 
 - `data`: Directory containing the `multilingual_adapted.tsv` file. This file represents the adapted multilingual dataset created by curating and sampling from other datasets available for the task.
 
