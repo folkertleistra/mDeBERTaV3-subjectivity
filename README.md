@@ -3,7 +3,7 @@ This GitHub contains all the code and fine-tuned mDeBERTaV3 models that we used 
 
 More details about this lab can be found [here](https://checkthat.gitlab.io/).
 
-All our fine-tuned models can be found [here]([https://drive.google.com/drive/u/0/folders/1TbKs07_ISbw4Gr9njy7IBAAjCyx9jyQP](https://huggingface.co/GroNLP))
+All our fine-tuned models can be found [here](https://huggingface.co/GroNLP).
 
 ## Files and Directories
 
