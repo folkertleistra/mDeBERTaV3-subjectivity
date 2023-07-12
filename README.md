@@ -3,7 +3,7 @@ This GitHub contains all the code and fine-tuned mDeBERTaV3 models that we used 
 
 More details about this lab can be found [here](https://checkthat.gitlab.io/).
 
-All our fine-tuned models can be found [here](https://huggingface.co/GroNLP).
+All our fine-tuned models are hosted on HuggingFace and can be found [here](https://huggingface.co/GroNLP).
 
 ## Files and Directories
 
@@ -12,7 +12,6 @@ The following files and directories can be found in this repository:
 ├── src
 │ ├── make_predictions.py
 │ └── mdebertav3_grid.py
-├── fine-tuned-models
 ├── data
 │ └── multilingual_adapted.tsv
 └── requirements.txt
@@ -21,8 +20,6 @@ The following files and directories can be found in this repository:
 - `src`: Contains the source code files for the project.
   - `make_predictions.py`: Python script that can be used to make predictions using a fine-tuned model on a test set.
   - `mdebertav3_grid.py`: Python script used to run random grid searches using Weights and Biases.
-
-- `fine-tuned-models`: Directory that can be used to store the fine-tuned models. Models are hosted on [HuggingFace](https://huggingface.co/GroNLP)
 
 - `data`: Directory containing the `multilingual_adapted.tsv` file. This file represents the adapted multilingual dataset created by curating and sampling from other datasets available for the task.
 
@@ -68,3 +65,5 @@ This project is affiliated with the University of Groningen.
 Folkert Atze Leistra
 
 Tommaso Caselli
+
+For questions, pleace reach out to f.a.leistra@student.rug.nl
